@@ -156,8 +156,29 @@ def render_cli_report(report: dict):
     print("="*80 + "\n")
 
 def main():
-    orchestrator = StratifyOrchestrator()
     print_banner()
+
+    if len(sys.argv) > 1 and sys.argv[1] in ["--compliance", "compliance", "--licenses"]:
+        from stratify_core.license_compliance import license_registry
+        print("="*80)
+        print("[STRATIFY INTELLECTUAL PROPERTY & LICENSE COMPLIANCE AUDIT]")
+        print("="*80)
+        audit = license_registry.audit_registry()
+        print(f"Total Registered Skills: {audit.total_skills}")
+        print(f"  - APPROVED (Permissive commercial use): {audit.approved_count}")
+        print(f"  - CONDITIONAL (Attribution/ShareAlike): {audit.conditional_count}")
+        print(f"  - RESTRICTED (Requires legal waiver):  {audit.restricted_count}")
+        print(f"  - UNKNOWN (Unlicensed/Prohibited):     {audit.unknown_count}")
+        print(f"\nCommercial Distribution Status: {'COMPLIANT' if audit.is_commercially_compliant else 'NON-COMPLIANT'}")
+        print("Marketplace Target Readiness:")
+        for mp, ready in audit.marketplace_readiness.items():
+            print(f"  - {mp}: {'READY' if ready else 'BLOCKED'}")
+        license_registry.generate_third_party_licenses_md("THIRD_PARTY_LICENSES.md")
+        print("\nRegistry File: THIRD_PARTY_LICENSES.md (updated)")
+        print("="*80 + "\n")
+        return
+
+    orchestrator = StratifyOrchestrator()
 
     if len(sys.argv) > 1 and sys.argv[1] not in ["--repl", "-i"]:
         raw_cmd = " ".join(sys.argv[1:])

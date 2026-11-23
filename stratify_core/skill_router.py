@@ -12,6 +12,7 @@ from pydantic import BaseModel, Field
 from stratify_core.skill_discovery import SkillDiscovery, SkillMetadata
 from stratify_core.industry_classifier import IndustryProfile
 from stratify_core.command_parser import StratifyCommand
+from stratify_core.license_compliance import license_registry
 
 class RoutedSkill(BaseModel):
     id: str
@@ -140,6 +141,9 @@ class DynamicSkillRouter:
                           selected_skills: List[RoutedSkill], selected_ids: Set[str]):
         for skill_id, priority, reason in targets:
             if skill_id in all_skills and skill_id not in selected_ids:
+                is_executable, _ = license_registry.is_skill_executable(skill_id)
+                if not is_executable:
+                    continue  # Guardrail: skip non-compliant or restricted skills
                 meta = all_skills[skill_id]
                 selected_skills.append(RoutedSkill(
                     id=meta.id,

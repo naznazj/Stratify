@@ -18,7 +18,7 @@ from stratify_core.command_parser import parse_stratify_command
 from stratify_core.data_store import StratifyDataStore
 from stratify_core.skill_discovery import SkillDiscovery
 
-app = FastAPI(title="STRATIFY Business Intelligence & Strategic Marketing Engine", version="1.0.2")
+app = FastAPI(title="STRATIFY Business Intelligence & Strategic Marketing Engine", version="1.0.3")
 
 # Configure CORS: allow override via STRATIFY_CORS_ORIGINS env var
 cors_env = os.getenv("STRATIFY_CORS_ORIGINS", "")
@@ -135,6 +135,17 @@ async def compare_industries(req: CompareRequest, request: Request):
 async def list_skills():
     skills = discovery.discover_skills()
     return {"skills": [s.model_dump() for s in skills.values()]}
+
+@app.get("/api/compliance")
+async def get_license_compliance():
+    from stratify_core.license_compliance import license_registry
+    audit = license_registry.audit_registry()
+    records = [r.model_dump() for r in license_registry.list_records()]
+    return {
+        "success": True,
+        "audit": audit.model_dump(),
+        "records": records
+    }
 
 @app.get("/api/config/weights")
 async def get_weights():

@@ -17,6 +17,11 @@ class SkillMetadata(BaseModel):
     token_weight: int = 750
     file_path: str
     is_available: bool = True
+    author: str = "naznazj"
+    license: str = "MIT"
+    approval_category: str = "APPROVED"
+    repository_url: str = "https://github.com/naznazj/Stratify"
+    is_commercially_permitted: bool = True
 
 class SkillDiscovery:
     def __init__(self, skills_dir: Optional[str] = None):

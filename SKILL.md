@@ -59,3 +59,33 @@ Inspect the `skills/` directory containing all 21 modular `SKILL.md` files:
 21. `analytics-performance`
 
 **Skill Routing Rule**: Never load all 21 skills simultaneously. Dynamically load only the skills matching the selected industry and research depth.
+
+---
+
+## Intellectual Property & Skill License Compliance
+
+STRATIFY implements a strict third-party skill licensing and compliance protocol.
+
+Before integrating or executing any external skill:
+1. Identify its original author and repository provenance.
+2. Locate and inspect its official `LICENSE` file.
+3. Determine whether commercial use is permitted.
+4. Check modification and redistribution requirements.
+5. Preserve original copyright and attribution notices.
+6. Record the original repository URL and license in `THIRD_PARTY_LICENSES.md`.
+7. Maintain the third-party license registry.
+
+### Skill Approval Categories
+- **APPROVED**: Commercial use and intended integration are permitted (e.g. MIT, Apache 2.0, BSD).
+- **CONDITIONAL**: Additional attribution, source disclosure, or licensing obligations apply.
+- **RESTRICTED**: Requires explicit permission or legal review (e.g. GPL, CC-BY-NC).
+- **UNKNOWN**: No verifiable license; strictly do not copy, modify, redistribute, or sell.
+
+### Operational Guardrails
+- Never copy proprietary skills without permission.
+- Never remove original copyright notices.
+- Do not claim ownership of third-party skill content.
+- Keep STRATIFY's original orchestration logic separate from third-party skills.
+- Prefer independently developed skills or permissively licensed components.
+- Recheck licenses before publishing to marketplaces such as Agensi.io.
+

@@ -1,6 +1,6 @@
 {
   "name": "stratify-ai",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "STRATIFY — Business Intelligence & Strategic Marketing Engine. Agent skill and CLI for market research, competitor intelligence, verified prospects, and marketing strategy.",
   "main": "bin/stratify.js",
   "bin": {
