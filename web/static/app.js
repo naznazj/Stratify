@@ -5,6 +5,16 @@
 let currentReport = null;
 let currentDepth = "standard";
 
+// Security utility: escape HTML entities to prevent DOM XSS
+function escapeHtml(str) {
+  if (typeof str !== 'string') return str === undefined || str === null ? '' : String(str);
+  return str.replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
+}
+
 document.addEventListener("DOMContentLoaded", () => {
   // Initialize Lucide icons
   if (window.lucide) {

@@ -31,24 +31,24 @@ orchestrator = StratifyOrchestrator(data_store=data_store)
 discovery = SkillDiscovery()
 
 class RunRequest(BaseModel):
-    command: Optional[str] = None
-    industry: Optional[str] = None
-    location: Optional[str] = None
-    depth: str = "standard"
-    token_budget: Optional[int] = None
+    command: Optional[str] = Field(default=None, max_length=1000)
+    industry: Optional[str] = Field(default=None, max_length=150)
+    location: Optional[str] = Field(default=None, max_length=150)
+    depth: str = Field(default="standard", pattern=r"^(quick|standard|deep)$")
+    token_budget: Optional[int] = Field(default=None, ge=100, le=10_000_000)
 
 class CompareRequest(BaseModel):
-    industry_1: str
-    industry_2: str
-    location: Optional[str] = None
-    depth: str = "standard"
+    industry_1: str = Field(max_length=150)
+    industry_2: str = Field(max_length=150)
+    location: Optional[str] = Field(default=None, max_length=150)
+    depth: str = Field(default="standard", pattern=r"^(quick|standard|deep)$")
 
 class WeightUpdateRequest(BaseModel):
-    market_demand: float = 0.25
-    revenue_potential: float = 0.25
-    purchasing_power: float = 0.20
-    competitive_opportunity: float = 0.15
-    execution_feasibility: float = 0.15
+    market_demand: float = Field(default=0.25, ge=0.0, le=1.0)
+    revenue_potential: float = Field(default=0.25, ge=0.0, le=1.0)
+    purchasing_power: float = Field(default=0.20, ge=0.0, le=1.0)
+    competitive_opportunity: float = Field(default=0.15, ge=0.0, le=1.0)
+    execution_feasibility: float = Field(default=0.15, ge=0.0, le=1.0)
 
 @app.post("/api/stratify/run")
 async def run_stratify(req: RunRequest):
