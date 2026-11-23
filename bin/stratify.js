@@ -100,7 +100,7 @@ printBanner();
 
 const pythonCmd = getPythonCommand();
 if (!pythonCmd) {
-  console.error('❌ Python 3 is required. Please install Python 3.10+ to run the research orchestrator.');
+  console.error('[ERROR] Python 3 is required. Please install Python 3.10+ to run the research orchestrator.');
   process.exit(1);
 }
 

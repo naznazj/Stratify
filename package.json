@@ -10,7 +10,7 @@
   "scripts": {
     "stratify": "node ./bin/stratify.js",
     "web": "node ./bin/stratify.js --web",
-    "test": "python -m unittest tests/test_stratify.py && python -m unittest tests/test_api_endpoints.py"
+    "test": "python -m unittest discover tests/"
   },
   "keywords": [
     "ai-agent",
@@ -22,7 +22,7 @@
     "lead-generation",
     "stratify"
   ],
-  "author": "STRATIFY Team",
+  "author": "naznazj",
   "license": "MIT",
   "repository": {
     "type": "git",

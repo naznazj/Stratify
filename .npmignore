@@ -1,0 +1,16 @@
+# Development & test suites
+tests/
+.pytest_cache/
+generate_skills.py
+
+# Local database and cache
+data/*.db
+data/*.sqlite*
+__pycache__/
+*.pyc
+*.log
+
+# Git internals
+.git/
+.github/
+.gitignore

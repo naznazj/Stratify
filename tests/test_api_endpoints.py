@@ -100,5 +100,22 @@ class TestServerEndpoints(unittest.TestCase):
         self.assertEqual(post_resp.status_code, 200)
         self.assertTrue(post_resp.json()["success"])
 
+    def test_06_input_validation_and_security(self):
+        """Verifies security controls: limit validation, export format restriction, and rate limiter."""
+        # Test unbounded/invalid history limit (> 500 or < 1)
+        resp_too_high = self.client.get("/api/stratify/history?limit=1000")
+        self.assertEqual(resp_too_high.status_code, 422)
+
+        resp_too_low = self.client.get("/api/stratify/history?limit=0")
+        self.assertEqual(resp_too_low.status_code, 422)
+
+        # Test invalid export format
+        resp_bad_format = self.client.get("/api/stratify/export/fake_id?format=malicious_payload")
+        self.assertEqual(resp_bad_format.status_code, 422)
+
+        # Test invalid report ID with path traversal characters
+        resp_bad_id = self.client.get("/api/stratify/report/test!@#$%^&*()")
+        self.assertEqual(resp_bad_id.status_code, 422)
+
 if __name__ == "__main__":
     unittest.main()

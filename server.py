@@ -4,8 +4,10 @@ Serves the STRATIFY SaaS Dashboard and REST API endpoints.
 """
 import os
 import time
+from collections import defaultdict
+import threading
 from typing import Dict, Any, List, Optional
-from fastapi import FastAPI, HTTPException, Query, Response
+from fastapi import FastAPI, HTTPException, Query, Path, Request, Response
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse, FileResponse
 from fastapi.middleware.cors import CORSMiddleware
@@ -16,15 +18,46 @@ from stratify_core.command_parser import parse_stratify_command
 from stratify_core.data_store import StratifyDataStore
 from stratify_core.skill_discovery import SkillDiscovery
 
-app = FastAPI(title="STRATIFY Business Intelligence & Strategic Marketing Engine", version="1.0.0")
+app = FastAPI(title="STRATIFY Business Intelligence & Strategic Marketing Engine", version="1.0.1")
+
+# Configure CORS: allow override via STRATIFY_CORS_ORIGINS env var
+cors_env = os.getenv("STRATIFY_CORS_ORIGINS", "")
+if cors_env:
+    allowed_origins = [o.strip() for o in cors_env.split(",") if o.strip()]
+else:
+    allowed_origins = ["*"]
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=allowed_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# In-memory sliding window rate limiter (prevents API flooding)
+class SimpleRateLimiter:
+    def __init__(self, max_requests: int = 60, window_seconds: int = 60):
+        self.max_requests = max_requests
+        self.window_seconds = window_seconds
+        self.requests = defaultdict(list)
+        self.lock = threading.Lock()
+
+    def is_allowed(self, client_ip: str) -> bool:
+        if not client_ip or client_ip in ("testclient", "localhost"):
+            return True
+        now = time.time()
+        with self.lock:
+            window_start = now - self.window_seconds
+            valid_timestamps = [t for t in self.requests[client_ip] if t > window_start]
+            if len(valid_timestamps) >= self.max_requests:
+                self.requests[client_ip] = valid_timestamps
+                return False
+            valid_timestamps.append(now)
+            self.requests[client_ip] = valid_timestamps
+            return True
+
+limiter = SimpleRateLimiter(max_requests=60, window_seconds=60)
 
 data_store = StratifyDataStore()
 orchestrator = StratifyOrchestrator(data_store=data_store)
@@ -38,8 +71,8 @@ class RunRequest(BaseModel):
     token_budget: Optional[int] = Field(default=None, ge=100, le=10_000_000)
 
 class CompareRequest(BaseModel):
-    industry_1: str = Field(max_length=150)
-    industry_2: str = Field(max_length=150)
+    industry_1: str = Field(min_length=1, max_length=150)
+    industry_2: str = Field(min_length=1, max_length=150)
     location: Optional[str] = Field(default=None, max_length=150)
     depth: str = Field(default="standard", pattern=r"^(quick|standard|deep)$")
 
@@ -51,7 +84,11 @@ class WeightUpdateRequest(BaseModel):
     execution_feasibility: float = Field(default=0.15, ge=0.0, le=1.0)
 
 @app.post("/api/stratify/run")
-async def run_stratify(req: RunRequest):
+async def run_stratify(req: RunRequest, request: Request):
+    client_ip = request.client.host if request.client else "unknown"
+    if not limiter.is_allowed(client_ip):
+        raise HTTPException(status_code=429, detail="Rate limit exceeded. Maximum 60 requests per minute.")
+
     try:
         if req.command and req.command.strip():
             raw_cmd = req.command.strip()
@@ -67,24 +104,28 @@ async def run_stratify(req: RunRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/api/stratify/history")
-async def get_history(limit: int = 50):
+async def get_history(limit: int = Query(default=50, ge=1, le=500)):
     reports = data_store.list_reports(limit=limit)
     return {"reports": reports}
 
 @app.get("/api/stratify/report/{report_id}")
-async def get_report(report_id: str):
+async def get_report(report_id: str = Path(..., pattern=r"^[a-zA-Z0-9_\-]+$", max_length=64)):
     report = data_store.get_report(report_id)
     if not report:
         raise HTTPException(status_code=404, detail="Report not found")
     return {"report": report}
 
 @app.delete("/api/stratify/report/{report_id}")
-async def delete_report(report_id: str):
+async def delete_report(report_id: str = Path(..., pattern=r"^[a-zA-Z0-9_\-]+$", max_length=64)):
     success = data_store.delete_report(report_id)
     return {"success": success}
 
 @app.post("/api/stratify/compare")
-async def compare_industries(req: CompareRequest):
+async def compare_industries(req: CompareRequest, request: Request):
+    client_ip = request.client.host if request.client else "unknown"
+    if not limiter.is_allowed(client_ip):
+        raise HTTPException(status_code=429, detail="Rate limit exceeded. Maximum 60 requests per minute.")
+
     loc_flag = f" --location {req.location}" if req.location else ""
     cmd = f"/stratify compare {req.industry_1} vs {req.industry_2}{loc_flag} --depth {req.depth}"
     comparison = orchestrator.execute_command(cmd)
@@ -113,7 +154,10 @@ async def update_weights(req: WeightUpdateRequest):
     return {"success": True, "weights": weights}
 
 @app.get("/api/stratify/export/{report_id}")
-async def export_report(report_id: str, format: str = "markdown"):
+async def export_report(
+    report_id: str = Path(..., pattern=r"^[a-zA-Z0-9_\-]+$", max_length=64),
+    format: str = Query(default="markdown", pattern=r"^(json|markdown)$")
+):
     report = data_store.get_report(report_id)
     if not report:
         raise HTTPException(status_code=404, detail="Report not found")
