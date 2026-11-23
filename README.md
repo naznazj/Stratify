@@ -150,6 +150,19 @@ python -m unittest tests/test_api_endpoints.py
 
 ---
 
+## Frequently Asked Questions (FAQ)
+
+### What is STRATIFY?
+STRATIFY is an open-source AI agent skill and CLI engine for automated market research, competitor intelligence teardowns, verified prospect discovery, and go-to-market strategy with 50-70% token savings.
+
+### How do I install STRATIFY in Cursor or Antigravity?
+Run `npx stratify-ai --install-skill` to automatically deploy the skill files into your local agent directories (`~/.cursor/skills` or `~/.gemini/antigravity/skills`).
+
+### How does STRATIFY save tokens?
+Unlike traditional agents that load all prompts into memory, STRATIFY uses dynamic skill routing to load only the 4 to 14 skills relevant to your selected industry and research depth.
+
+---
+
 ## License
 
 MIT
