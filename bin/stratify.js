@@ -97,7 +97,59 @@ if (args.includes('--install-skill')) {
   process.exit(0);
 }
 
-// 2. Launch Web Dashboard
+// 2. Skill Auto-Uninstaller for AI Agent environments
+if (args.includes('--uninstall-skill') || args.includes('--remove-skill')) {
+  printBanner();
+  console.log('[UNINSTALL] Removing STRATIFY Skill from AI Agent directories...\n');
+
+  const homeDir = os.homedir();
+  const cwd = process.cwd();
+  const targetDirs = [
+    path.join(homeDir, '.gemini', 'antigravity', 'skills', 'stratify'),
+    path.join(homeDir, '.agent', 'skills', 'stratify'),
+    path.join(homeDir, '.cursor', 'skills', 'stratify'),
+    path.join(cwd, '.agent', 'skills', 'stratify')
+  ];
+
+  let removedCount = 0;
+  for (const dir of targetDirs) {
+    if (fs.existsSync(dir) && !dir.startsWith(rootDir)) {
+      try {
+        fs.rmSync(dir, { recursive: true, force: true });
+        console.log(`[REMOVED] Deleted skill directory: ${dir}`);
+        removedCount++;
+      } catch (err) {
+        console.log(`[WARNING] Could not delete ${dir}: ${err.message}`);
+      }
+    }
+  }
+
+  // Also remove local project bridge files in CWD if running from another project
+  if (cwd !== rootDir) {
+    const bridgeFiles = ['GEMINI.md', 'CLAUDE.md', 'AGENTS.md', '.cursorrules'];
+    for (const bf of bridgeFiles) {
+      const targetFile = path.join(cwd, bf);
+      if (fs.existsSync(targetFile)) {
+        try {
+          const content = fs.readFileSync(targetFile, 'utf8');
+          if (content.includes('STRATIFY')) {
+            fs.unlinkSync(targetFile);
+            console.log(`[REMOVED] Deleted project rule: ${bf}`);
+          }
+        } catch (e) {}
+      }
+    }
+  }
+
+  if (removedCount === 0) {
+    console.log('[INFO] No installed STRATIFY skills found in default agent directories.');
+  }
+
+  console.log('\n[COMPLETE] Uninstallation finished. STRATIFY skill has been removed.');
+  process.exit(0);
+}
+
+// 3. Launch Web Dashboard
 if (args.includes('--web') || args.includes('-w') || args.includes('serve')) {
   printBanner();
   console.log('[SERVER] Starting STRATIFY Web Server on http://127.0.0.1:8000...\n');
