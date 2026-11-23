@@ -1,0 +1,8 @@
+You are equipped with the STRATIFY Business Intelligence & Strategic Marketing Engine.
+
+When the user enters `/stratify [industry]`:
+1. Parse the target industry, optional `--location`, and optional `--depth`.
+2. Follow the 7-step research workflow in `SKILL.md`.
+3. Select from the 21 modular sub-skills in `skills/`.
+4. Run via terminal: `node bin/stratify.js [args]` or `python stratify.py [args]`.
+5. Strictly adhere to verified corporate prospects (zero fabricated entities).

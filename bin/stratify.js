@@ -69,6 +69,30 @@ if (args.includes('--install-skill')) {
     console.log(`[INFO] STRATIFY is ready. You can copy this folder to any agent skills directory.`);
   }
 
+  // Deploy project instruction rules (GEMINI.md, CLAUDE.md, AGENTS.md, .cursorrules) into current workspace
+  const cwd = process.cwd();
+  if (cwd !== rootDir) {
+    const bridgeFiles = ['GEMINI.md', 'CLAUDE.md', 'AGENTS.md', '.cursorrules'];
+    for (const bf of bridgeFiles) {
+      const src = path.join(rootDir, bf);
+      const dst = path.join(cwd, bf);
+      if (fs.existsSync(src) && !fs.existsSync(dst)) {
+        try {
+          fs.copyFileSync(src, dst);
+          console.log(`[SUCCESS] Configured agent rule: ${bf}`);
+        } catch (e) {}
+      }
+    }
+    const localAgentSkill = path.join(cwd, '.agent', 'skills', 'stratify');
+    if (!fs.existsSync(localAgentSkill)) {
+      try {
+        fs.mkdirSync(localAgentSkill, { recursive: true });
+        fs.copyFileSync(path.join(rootDir, 'SKILL.md'), path.join(localAgentSkill, 'SKILL.md'));
+        console.log(`[SUCCESS] Configured workspace skill: .agent/skills/stratify/SKILL.md`);
+      } catch (e) {}
+    }
+  }
+
   console.log('\n[COMPLETE] Installation finished. You can now use /stratify [industry] in your AI agent.');
   process.exit(0);
 }

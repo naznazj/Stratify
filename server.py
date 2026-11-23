@@ -18,7 +18,7 @@ from stratify_core.command_parser import parse_stratify_command
 from stratify_core.data_store import StratifyDataStore
 from stratify_core.skill_discovery import SkillDiscovery
 
-app = FastAPI(title="STRATIFY Business Intelligence & Strategic Marketing Engine", version="1.0.3")
+app = FastAPI(title="STRATIFY Business Intelligence & Strategic Marketing Engine", version="1.0.4")
 
 # Configure CORS: allow override via STRATIFY_CORS_ORIGINS env var
 cors_env = os.getenv("STRATIFY_CORS_ORIGINS", "")
