@@ -1,0 +1,35 @@
+{
+  "name": "stratify-ai",
+  "version": "1.0.0",
+  "description": "STRATIFY — Business Intelligence & Strategic Marketing Engine. Agent skill and CLI for market research, competitor intelligence, verified prospects, and marketing strategy.",
+  "main": "bin/stratify.js",
+  "bin": {
+    "stratify": "./bin/stratify.js",
+    "stratify-ai": "./bin/stratify.js"
+  },
+  "scripts": {
+    "stratify": "node ./bin/stratify.js",
+    "web": "node ./bin/stratify.js --web",
+    "test": "python -m unittest tests/test_stratify.py && python -m unittest tests/test_api_endpoints.py"
+  },
+  "keywords": [
+    "ai-agent",
+    "agent-skill",
+    "market-research",
+    "marketing-strategy",
+    "competitor-intelligence",
+    "business-intelligence",
+    "lead-generation",
+    "stratify"
+  ],
+  "author": "STRATIFY Team",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/naznazj/Stratify.git"
+  },
+  "bugs": {
+    "url": "https://github.com/naznazj/Stratify/issues"
+  },
+  "homepage": "https://github.com/naznazj/Stratify#readme"
+}

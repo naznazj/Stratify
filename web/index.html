@@ -1,0 +1,770 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>STRATIFY — Business Intelligence & Strategic Marketing Engine</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#eef2ff',
+              100: '#e0e7ff',
+              500: '#6366f1',
+              600: '#4f46e5',
+              700: '#4338ca',
+              900: '#312e81',
+            },
+            darkbg: {
+              900: '#0b0f19',
+              800: '#111827',
+              700: '#1f2937',
+              600: '#374151'
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: #4b5563;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body class="bg-gray-50 dark:bg-darkbg-900 text-gray-900 dark:text-gray-100 min-h-screen transition-colors duration-200">
+
+  <!-- Top Navigation Bar -->
+  <header class="border-b border-gray-200 dark:border-darkbg-700 bg-white dark:bg-darkbg-800 sticky top-0 z-40">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      <div class="flex items-center space-x-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-brand-600 to-indigo-400 flex items-center justify-center text-white shadow-lg shadow-indigo-500/25">
+          <i data-lucide="compass" class="w-6 h-6"></i>
+        </div>
+        <div>
+          <div class="flex items-center space-x-2">
+            <span class="text-xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-indigo-500 to-purple-500">STRATIFY</span>
+            <span class="px-2 py-0.5 text-xs font-semibold rounded-full bg-indigo-100 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800">Intelligence v1.0</span>
+          </div>
+          <p class="text-xs text-gray-500 dark:text-gray-400">Business Intelligence & Strategic Marketing Engine</p>
+        </div>
+      </div>
+
+      <!-- Action items -->
+      <div class="flex items-center space-x-3">
+        <!-- Telemetry Pill -->
+        <div id="telemetryPill" class="hidden md:flex items-center space-x-2 text-xs px-3 py-1.5 rounded-lg bg-gray-100 dark:bg-darkbg-700 border border-gray-200 dark:border-darkbg-600">
+          <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+          <span class="text-gray-600 dark:text-gray-300">Tokens: <strong id="tokenCountNav" class="text-indigo-500">0</strong></span>
+          <span class="text-gray-400">|</span>
+          <span class="text-emerald-500 font-medium" id="efficiencyNav">0% Saved</span>
+        </div>
+
+        <!-- History Button -->
+        <button id="historyBtn" class="flex items-center space-x-1 px-3 py-1.5 text-sm font-medium rounded-lg border border-gray-200 dark:border-darkbg-600 hover:bg-gray-100 dark:hover:bg-darkbg-700 text-gray-700 dark:text-gray-200 transition">
+          <i data-lucide="history" class="w-4 h-4"></i>
+          <span>History</span>
+        </button>
+
+        <!-- Compare Modal Button -->
+        <button id="openCompareModalBtn" class="flex items-center space-x-1 px-3 py-1.5 text-sm font-medium rounded-lg border border-gray-200 dark:border-darkbg-600 hover:bg-gray-100 dark:hover:bg-darkbg-700 text-gray-700 dark:text-gray-200 transition">
+          <i data-lucide="git-compare" class="w-4 h-4"></i>
+          <span>Compare</span>
+        </button>
+
+        <!-- Export Dropdown -->
+        <div class="relative inline-block text-left">
+          <button id="exportDropdownBtn" class="flex items-center space-x-1 px-3 py-1.5 text-sm font-medium rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm transition">
+            <i data-lucide="download" class="w-4 h-4"></i>
+            <span>Export</span>
+            <i data-lucide="chevron-down" class="w-3 h-3 ml-1"></i>
+          </button>
+          <div id="exportMenu" class="hidden absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white dark:bg-darkbg-800 ring-1 ring-black ring-opacity-5 divide-y divide-gray-100 dark:divide-darkbg-700 z-50">
+            <div class="py-1">
+              <a href="#" id="exportMdBtn" class="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-darkbg-700">
+                <i data-lucide="file-text" class="w-4 h-4 mr-2 text-indigo-500"></i> Markdown Report (.md)
+              </a>
+              <a href="#" id="exportJsonBtn" class="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-darkbg-700">
+                <i data-lucide="code" class="w-4 h-4 mr-2 text-emerald-500"></i> Full Dataset (.json)
+              </a>
+              <a href="#" onclick="window.print()" class="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-darkbg-700">
+                <i data-lucide="printer" class="w-4 h-4 mr-2 text-amber-500"></i> Print Dashboard
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Theme Toggle -->
+        <button id="themeToggleBtn" class="p-2 rounded-lg border border-gray-200 dark:border-darkbg-600 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-darkbg-700 transition" title="Toggle Dark/Light Mode">
+          <i data-lucide="sun" id="sunIcon" class="w-4 h-4 hidden"></i>
+          <i data-lucide="moon" id="moonIcon" class="w-4 h-4"></i>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Hero / Command Center Section -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+    
+    <!-- Command Input Card -->
+    <div class="bg-white dark:bg-darkbg-800 rounded-2xl shadow-sm border border-gray-200 dark:border-darkbg-700 p-5 mb-6">
+      <form id="stratifyForm" class="space-y-4">
+        <!-- Interactive Command Bar -->
+        <div>
+          <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1.5 flex items-center justify-between">
+            <span>STRATIFY Command Bar</span>
+            <span class="text-indigo-500 lowercase font-mono">format: /stratify [industry] [--location &lt;loc&gt;] [--depth &lt;quick|standard|deep&gt;]</span>
+          </label>
+          <div class="relative flex items-center">
+            <span class="absolute left-4 text-indigo-500 font-mono font-bold text-lg select-none">/stratify</span>
+            <input 
+              type="text" 
+              id="commandInput"
+              class="w-full pl-28 pr-32 py-3.5 bg-gray-50 dark:bg-darkbg-900 border border-gray-300 dark:border-darkbg-600 rounded-xl text-base font-medium focus:ring-2 focus:ring-indigo-500 focus:outline-none transition shadow-inner font-mono"
+              placeholder="Healthcare --location Philippines --depth standard"
+              value="Healthcare --location Philippines"
+            />
+            <button 
+              type="submit" 
+              id="runBtn"
+              class="absolute right-2 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-lg text-sm flex items-center space-x-1.5 shadow-md shadow-indigo-500/20 transition disabled:opacity-50"
+            >
+              <i data-lucide="zap" class="w-4 h-4"></i>
+              <span>Research</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Quick Industry Selector & Depth Controls -->
+        <div class="flex flex-wrap items-center justify-between gap-3 pt-2">
+          <!-- Quick Industry Pills -->
+          <div class="flex flex-wrap items-center gap-1.5 text-xs">
+            <span class="text-gray-400 font-medium mr-1">Quick Select:</span>
+            <button type="button" class="industry-pill px-2.5 py-1 rounded-full bg-gray-100 dark:bg-darkbg-700 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-darkbg-600 transition" data-ind="Healthcare">Healthcare</button>
+            <button type="button" class="industry-pill px-2.5 py-1 rounded-full bg-gray-100 dark:bg-darkbg-700 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-darkbg-600 transition" data-ind="Real Estate">Real Estate</button>
+            <button type="button" class="industry-pill px-2.5 py-1 rounded-full bg-gray-100 dark:bg-darkbg-700 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-darkbg-600 transition" data-ind="E-commerce">E-commerce</button>
+            <button type="button" class="industry-pill px-2.5 py-1 rounded-full bg-gray-100 dark:bg-darkbg-700 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-darkbg-600 transition" data-ind="Automotive">Automotive</button>
+            <button type="button" class="industry-pill px-2.5 py-1 rounded-full bg-gray-100 dark:bg-darkbg-700 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-darkbg-600 transition" data-ind="Technology and SaaS">Tech / SaaS</button>
+            <button type="button" class="industry-pill px-2.5 py-1 rounded-full bg-gray-100 dark:bg-darkbg-700 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-darkbg-600 transition" data-ind="Financial Services">FinTech</button>
+          </div>
+
+          <!-- Research Depth Picker -->
+          <div class="flex items-center space-x-1.5 bg-gray-100 dark:bg-darkbg-700 p-1 rounded-lg border border-gray-200 dark:border-darkbg-600 text-xs">
+            <span class="text-gray-400 px-2 font-medium">Depth:</span>
+            <button type="button" class="depth-btn px-2.5 py-1 rounded-md text-gray-600 dark:text-gray-300 hover:text-indigo-600" data-depth="quick">Quick</button>
+            <button type="button" class="depth-btn px-2.5 py-1 rounded-md bg-white dark:bg-darkbg-600 font-semibold text-indigo-600 dark:text-indigo-300 shadow-sm" data-depth="standard">Standard</button>
+            <button type="button" class="depth-btn px-2.5 py-1 rounded-md text-gray-600 dark:text-gray-300 hover:text-indigo-600" data-depth="deep">Deep</button>
+          </div>
+        </div>
+      </form>
+    </div>
+
+    <!-- Multi-Agent Orchestration Live Progress Bar (Shown during search) -->
+    <div id="orchestratorStatus" class="hidden bg-white dark:bg-darkbg-800 rounded-2xl shadow-sm border border-indigo-200 dark:border-indigo-900/50 p-6 mb-6">
+      <div class="flex items-center justify-between mb-3">
+        <div class="flex items-center space-x-3">
+          <div class="w-8 h-8 rounded-lg bg-indigo-100 dark:bg-indigo-950 flex items-center justify-center text-indigo-600 animate-spin">
+            <i data-lucide="loader-2" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <h4 class="text-sm font-bold text-gray-900 dark:text-white" id="statusHeading">STRATIFY Orchestrator Active</h4>
+            <p class="text-xs text-gray-500" id="statusSubheading">Discovering relevant AI skills and initializing specialized research agents...</p>
+          </div>
+        </div>
+        <span class="text-xs font-mono text-indigo-500" id="statusTimer">0.0s</span>
+      </div>
+
+      <!-- Agent Steps Timeline -->
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-2 pt-2 text-xs">
+        <div id="step-classify" class="p-2 rounded bg-indigo-50 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300 font-medium flex items-center space-x-1.5">
+          <i data-lucide="check-circle" class="w-3.5 h-3.5 text-indigo-500"></i>
+          <span>1. Taxonomy & Routing</span>
+        </div>
+        <div id="step-market" class="p-2 rounded bg-gray-50 dark:bg-darkbg-700 text-gray-600 dark:text-gray-400 flex items-center space-x-1.5">
+          <i data-lucide="circle" class="w-3.5 h-3.5 text-gray-400"></i>
+          <span>2. Market TAM/SAM/SOM</span>
+        </div>
+        <div id="step-opp" class="p-2 rounded bg-gray-50 dark:bg-darkbg-700 text-gray-600 dark:text-gray-400 flex items-center space-x-1.5">
+          <i data-lucide="circle" class="w-3.5 h-3.5 text-gray-400"></i>
+          <span>3. Opportunity Scoring</span>
+        </div>
+        <div id="step-prospects" class="p-2 rounded bg-gray-50 dark:bg-darkbg-700 text-gray-600 dark:text-gray-400 flex items-center space-x-1.5">
+          <i data-lucide="circle" class="w-3.5 h-3.5 text-gray-400"></i>
+          <span>4. Verified Prospects & GTM</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Active Research Report Container -->
+    <div id="reportContainer">
+      <!-- Report Header Summary Bar -->
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white dark:bg-darkbg-800 rounded-2xl p-6 border border-gray-200 dark:border-darkbg-700 mb-6">
+        <div>
+          <div class="flex items-center space-x-3 mb-1">
+            <h1 class="text-2xl font-extrabold text-gray-900 dark:text-white" id="reportIndustryTitle">Healthcare & Life Sciences</h1>
+            <span id="reportLocationBadge" class="px-2.5 py-0.5 text-xs font-semibold rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">Philippines</span>
+            <span id="reportDepthBadge" class="px-2 py-0.5 text-xs font-semibold rounded-full bg-gray-100 dark:bg-darkbg-700 text-gray-600 dark:text-gray-300 uppercase">Standard</span>
+          </div>
+          <p class="text-sm text-gray-500 dark:text-gray-400 flex items-center space-x-2">
+            <span>Orchestrated in <strong id="reportDuration" class="text-gray-800 dark:text-gray-200">1.2s</strong></span>
+            <span>•</span>
+            <span>Skills Executed: <strong id="reportSkillCount" class="text-indigo-500">9/21</strong></span>
+            <span>•</span>
+            <span>Tokens Consumed: <strong id="reportTotalTokens" class="text-gray-800 dark:text-gray-200">8,420</strong></span>
+          </p>
+        </div>
+
+        <!-- Top Opportunity Score Highlight -->
+        <div class="flex items-center space-x-4">
+          <div class="text-right">
+            <span class="text-xs text-gray-400 uppercase tracking-wider font-semibold block">Top Opportunity Score</span>
+            <span class="text-xs text-emerald-500 font-medium" id="topOppNameSummary">PhilHealth-Integrated Outpatient ERP</span>
+          </div>
+          <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-indigo-500 to-emerald-500 flex flex-col items-center justify-center text-white shadow-lg shadow-indigo-500/20">
+            <span class="text-2xl font-black" id="topOppScoreNumber">91.4</span>
+            <span class="text-[10px] uppercase font-bold tracking-tight opacity-90">/ 100</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Navigation Tabs -->
+      <div class="flex items-center space-x-1 border-b border-gray-200 dark:border-darkbg-700 mb-6 overflow-x-auto custom-scrollbar pb-1 text-sm font-medium">
+        <button class="nav-tab active px-4 py-2.5 rounded-lg border-b-2 border-indigo-600 text-indigo-600 dark:text-indigo-400 font-semibold flex items-center space-x-2 whitespace-nowrap" data-tab="tab-overview">
+          <i data-lucide="bar-chart-3" class="w-4 h-4"></i>
+          <span>A. Market Overview</span>
+        </button>
+        <button class="nav-tab px-4 py-2.5 rounded-lg text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 flex items-center space-x-2 whitespace-nowrap" data-tab="tab-opportunities">
+          <i data-lucide="lightbulb" class="w-4 h-4"></i>
+          <span>B. Opportunities (<span id="oppTabCount">5</span>)</span>
+        </button>
+        <button class="nav-tab px-4 py-2.5 rounded-lg text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 flex items-center space-x-2 whitespace-nowrap" data-tab="tab-customers">
+          <i data-lucide="users" class="w-4 h-4"></i>
+          <span>C. Customer Intelligence</span>
+        </button>
+        <button class="nav-tab px-4 py-2.5 rounded-lg text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 flex items-center space-x-2 whitespace-nowrap" data-tab="tab-prospects">
+          <i data-lucide="building-2" class="w-4 h-4"></i>
+          <span>D. High-Value Targets (<span id="prospectTabCount">4</span>)</span>
+        </button>
+        <button class="nav-tab px-4 py-2.5 rounded-lg text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 flex items-center space-x-2 whitespace-nowrap" data-tab="tab-competitors">
+          <i data-lucide="swords" class="w-4 h-4"></i>
+          <span>E. Competitors</span>
+        </button>
+        <button class="nav-tab px-4 py-2.5 rounded-lg text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 flex items-center space-x-2 whitespace-nowrap" data-tab="tab-marketing">
+          <i data-lucide="megaphone" class="w-4 h-4"></i>
+          <span>F. Marketing Strategy</span>
+        </button>
+        <button class="nav-tab px-4 py-2.5 rounded-lg text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 flex items-center space-x-2 whitespace-nowrap" data-tab="tab-strategy">
+          <i data-lucide="calendar" class="w-4 h-4"></i>
+          <span>G. 90-Day Action Plan</span>
+        </button>
+        <button class="nav-tab px-4 py-2.5 rounded-lg text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 flex items-center space-x-2 whitespace-nowrap" data-tab="tab-telemetry">
+          <i data-lucide="cpu" class="w-4 h-4"></i>
+          <span>Tokens & Routing</span>
+        </button>
+      </div>
+
+      <!-- Tab Content Sections -->
+
+      <!-- TAB 1: MARKET OVERVIEW -->
+      <section id="tab-overview" class="tab-pane space-y-6">
+        <!-- TAM / SAM / SOM / CAGR KPI Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div class="bg-white dark:bg-darkbg-800 p-5 rounded-2xl border border-gray-200 dark:border-darkbg-700">
+            <span class="text-xs font-semibold text-gray-400 uppercase tracking-wider block mb-1">Total Addressable Market (TAM)</span>
+            <div class="text-xl font-bold text-gray-900 dark:text-white" id="tamValue">$18.4 Billion USD</div>
+            <span class="text-xs text-gray-500">Gross national sector expenditure</span>
+          </div>
+          <div class="bg-white dark:bg-darkbg-800 p-5 rounded-2xl border border-gray-200 dark:border-darkbg-700">
+            <span class="text-xs font-semibold text-gray-400 uppercase tracking-wider block mb-1">Serviceable Market (SAM)</span>
+            <div class="text-xl font-bold text-indigo-600 dark:text-indigo-400" id="samValue">$4.2 Billion USD</div>
+            <span class="text-xs text-gray-500">Target accessible providers & tech</span>
+          </div>
+          <div class="bg-white dark:bg-darkbg-800 p-5 rounded-2xl border border-gray-200 dark:border-darkbg-700">
+            <span class="text-xs font-semibold text-gray-400 uppercase tracking-wider block mb-1">Obtainable Market (SOM)</span>
+            <div class="text-xl font-bold text-emerald-600 dark:text-emerald-400" id="somValue">$380 Million USD</div>
+            <span class="text-xs text-gray-500">Realistic 36-month capture potential</span>
+          </div>
+          <div class="bg-white dark:bg-darkbg-800 p-5 rounded-2xl border border-gray-200 dark:border-darkbg-700">
+            <span class="text-xs font-semibold text-gray-400 uppercase tracking-wider block mb-1">Growth Trajectory</span>
+            <div class="text-xl font-bold text-amber-500" id="cagrValue">8.8% CAGR</div>
+            <span class="text-xs text-gray-500" id="maturityValue">Mature with Rapid Digital Transition</span>
+          </div>
+        </div>
+
+        <!-- Industry Overview Text & Key Trends -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div class="lg:col-span-2 bg-white dark:bg-darkbg-800 p-6 rounded-2xl border border-gray-200 dark:border-darkbg-700 space-y-4">
+            <h3 class="text-base font-bold text-gray-900 dark:text-white flex items-center space-x-2">
+              <i data-lucide="book-open" class="w-4 h-4 text-indigo-500"></i>
+              <span>Executive Industry Assessment</span>
+            </h3>
+            <p class="text-sm text-gray-600 dark:text-gray-300 leading-relaxed" id="marketOverviewText">
+              The healthcare market is undergoing rapid transformation accelerated by national digitization mandates and universal care legislation...
+            </p>
+
+            <h4 class="text-xs font-bold uppercase tracking-wider text-gray-400 pt-2">Key Market Drivers & Trends</h4>
+            <ul class="space-y-2 text-sm" id="marketTrendsList">
+              <!-- Dynamically populated -->
+            </ul>
+          </div>
+
+          <!-- Regulatory & Risks Column -->
+          <div class="bg-white dark:bg-darkbg-800 p-6 rounded-2xl border border-gray-200 dark:border-darkbg-700 space-y-4">
+            <h3 class="text-base font-bold text-gray-900 dark:text-white flex items-center space-x-2">
+              <i data-lucide="shield-alert" class="w-4 h-4 text-amber-500"></i>
+              <span>Regulatory & Risk Factors</span>
+            </h3>
+            <div>
+              <span class="text-xs font-semibold text-gray-400 uppercase tracking-wider block mb-2">Statutory Mandates</span>
+              <div class="flex flex-wrap gap-1.5" id="regulatoryTags">
+                <!-- Tags -->
+              </div>
+            </div>
+            <div>
+              <span class="text-xs font-semibold text-gray-400 uppercase tracking-wider block mb-2">Industry Risk Bottlenecks</span>
+              <ul class="space-y-2 text-xs text-gray-600 dark:text-gray-400" id="industryRisksList">
+                <!-- Risks -->
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <!-- Verified Citations Widget -->
+        <div class="bg-white dark:bg-darkbg-800 p-6 rounded-2xl border border-gray-200 dark:border-darkbg-700">
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="text-sm font-bold text-gray-900 dark:text-white flex items-center space-x-2">
+              <i data-lucide="check-check" class="w-4 h-4 text-emerald-500"></i>
+              <span>Verified Research Sources & Citations</span>
+            </h3>
+            <span class="text-xs text-gray-400" id="credibilityBadge">100% Credible Sources Linked</span>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-3" id="citationsGrid">
+            <!-- Citations -->
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 2: BUSINESS OPPORTUNITIES -->
+      <section id="tab-opportunities" class="tab-pane hidden space-y-6">
+        <!-- Controls & Sorting -->
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white dark:bg-darkbg-800 p-4 rounded-xl border border-gray-200 dark:border-darkbg-700">
+          <div class="text-sm text-gray-500">
+            Showing <strong id="oppTotalCountText" class="text-gray-900 dark:text-white">5</strong> actionable, scored business concepts
+          </div>
+          <div class="flex items-center space-x-2 text-xs">
+            <span class="text-gray-400 font-medium">Sort by:</span>
+            <button id="sortScoreBtn" class="px-3 py-1.5 rounded-lg bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 font-semibold border border-indigo-200 dark:border-indigo-800">Score (High-Low)</button>
+            <button id="sortDiffBtn" class="px-3 py-1.5 rounded-lg bg-gray-100 dark:bg-darkbg-700 text-gray-600 dark:text-gray-300">Execution Ease</button>
+          </div>
+        </div>
+
+        <!-- Opportunities Cards Grid -->
+        <div class="grid grid-cols-1 gap-4" id="opportunitiesContainer">
+          <!-- Dynamic cards -->
+        </div>
+      </section>
+
+      <!-- TAB 3: CUSTOMER INTELLIGENCE -->
+      <section id="tab-customers" class="tab-pane hidden space-y-6">
+        <!-- Customer Segments Grid -->
+        <div>
+          <h3 class="text-base font-bold text-gray-900 dark:text-white mb-3 flex items-center space-x-2">
+            <i data-lucide="pie-chart" class="w-4 h-4 text-indigo-500"></i>
+            <span>Target Customer Segments</span>
+          </h3>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4" id="customerSegmentsContainer">
+            <!-- Segments -->
+          </div>
+        </div>
+
+        <!-- Buyer Personas -->
+        <div>
+          <h3 class="text-base font-bold text-gray-900 dark:text-white mb-3 flex items-center space-x-2">
+            <i data-lucide="user-check" class="w-4 h-4 text-emerald-500"></i>
+            <span>Verified Buyer Personas</span>
+          </h3>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="buyerPersonasContainer">
+            <!-- Personas -->
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 4: HIGH-VALUE TARGETS -->
+      <section id="tab-prospects" class="tab-pane hidden space-y-6">
+        <!-- Table Search Bar -->
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white dark:bg-darkbg-800 p-4 rounded-xl border border-gray-200 dark:border-darkbg-700">
+          <div class="relative w-full sm:w-72">
+            <i data-lucide="search" class="w-4 h-4 text-gray-400 absolute left-3 top-3"></i>
+            <input 
+              type="text" 
+              id="prospectSearchInput" 
+              placeholder="Search companies, locations..."
+              class="w-full pl-9 pr-3 py-2 bg-gray-50 dark:bg-darkbg-900 border border-gray-300 dark:border-darkbg-600 rounded-lg text-xs focus:outline-none focus:ring-1 focus:ring-indigo-500"
+            />
+          </div>
+          <span class="text-xs text-emerald-600 dark:text-emerald-400 font-medium flex items-center space-x-1">
+            <i data-lucide="shield-check" class="w-3.5 h-3.5"></i>
+            <span>100% Publicly Verified Corporate Entities</span>
+          </span>
+        </div>
+
+        <!-- Prospects Table -->
+        <div class="bg-white dark:bg-darkbg-800 rounded-2xl border border-gray-200 dark:border-darkbg-700 overflow-hidden">
+          <div class="overflow-x-auto custom-scrollbar">
+            <table class="w-full text-left text-xs">
+              <thead class="bg-gray-50 dark:bg-darkbg-700/50 uppercase font-semibold text-gray-500 dark:text-gray-400 border-b border-gray-200 dark:border-darkbg-700">
+                <tr>
+                  <th class="px-5 py-3.5">Company & Website</th>
+                  <th class="px-5 py-3.5">Location & Scope</th>
+                  <th class="px-5 py-3.5">Fit Score</th>
+                  <th class="px-5 py-3.5">Public Buying Signal</th>
+                  <th class="px-5 py-3.5">Recommended Outreach Hook</th>
+                </tr>
+              </thead>
+              <tbody id="prospectsTableBody" class="divide-y divide-gray-200 dark:divide-darkbg-700">
+                <!-- Rows -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 5: COMPETITORS -->
+      <section id="tab-competitors" class="tab-pane hidden space-y-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="competitorsContainer">
+          <!-- Competitor cards -->
+        </div>
+
+        <!-- White Space Opportunities -->
+        <div class="bg-indigo-50/50 dark:bg-indigo-950/20 rounded-2xl p-6 border border-indigo-100 dark:border-indigo-900/40">
+          <h4 class="text-sm font-bold text-indigo-900 dark:text-indigo-300 mb-2 flex items-center space-x-2">
+            <i data-lucide="sparkles" class="w-4 h-4 text-indigo-500"></i>
+            <span>Exploitable Market White Space</span>
+          </h4>
+          <ul class="space-y-2 text-xs text-gray-700 dark:text-gray-300" id="whiteSpaceList">
+            <!-- White spaces -->
+          </ul>
+        </div>
+      </section>
+
+      <!-- TAB 6: MARKETING STRATEGY -->
+      <section id="tab-marketing" class="tab-pane hidden space-y-6">
+        <!-- Positioning Card -->
+        <div class="bg-gradient-to-r from-indigo-500/10 via-purple-500/10 to-transparent p-6 rounded-2xl border border-indigo-200 dark:border-indigo-900/50">
+          <span class="text-xs font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400 block mb-1">Strategic Brand Positioning</span>
+          <div class="text-lg font-bold text-gray-900 dark:text-white" id="mktPositioningText">The Regulatory-Compliant Outpatient Operating System</div>
+        </div>
+
+        <!-- Channels Grid -->
+        <div>
+          <h3 class="text-sm font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-3">Recommended Marketing Channels & Budget Allocation</h3>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="marketingChannelsContainer">
+            <!-- Channels -->
+          </div>
+        </div>
+
+        <!-- SEO & GEO Keywords Table -->
+        <div class="bg-white dark:bg-darkbg-800 rounded-2xl border border-gray-200 dark:border-darkbg-700 overflow-hidden p-5">
+          <h3 class="text-sm font-bold text-gray-900 dark:text-white mb-3 flex items-center space-x-2">
+            <i data-lucide="key" class="w-4 h-4 text-indigo-500"></i>
+            <span>High-Intent SEO & Generative Engine Optimization (GEO) Keywords</span>
+          </h3>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs">
+              <thead class="bg-gray-50 dark:bg-darkbg-700 text-gray-500 uppercase font-semibold">
+                <tr>
+                  <th class="px-4 py-2.5">Keyword / Query</th>
+                  <th class="px-4 py-2.5">Search Intent</th>
+                  <th class="px-4 py-2.5">Estimated Volume</th>
+                  <th class="px-4 py-2.5">Priority</th>
+                </tr>
+              </thead>
+              <tbody id="keywordsTableBody" class="divide-y divide-gray-200 dark:divide-darkbg-700">
+                <!-- Keywords -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Acquisition Funnel & Flagship Campaign -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div class="bg-white dark:bg-darkbg-800 p-6 rounded-2xl border border-gray-200 dark:border-darkbg-700 space-y-3">
+            <h4 class="text-sm font-bold text-gray-900 dark:text-white flex items-center space-x-2">
+              <i data-lucide="filter" class="w-4 h-4 text-indigo-500"></i>
+              <span>Customer Acquisition Funnel</span>
+            </h4>
+            <div class="space-y-2 text-xs">
+              <div class="p-2.5 rounded-lg bg-indigo-50 dark:bg-indigo-950/30">
+                <strong class="text-indigo-600 dark:text-indigo-400 block mb-0.5">Top of Funnel (TOFU)</strong>
+                <span id="funnelTofuText" class="text-gray-600 dark:text-gray-300">Annual Outpatient Benchmark Report</span>
+              </div>
+              <div class="p-2.5 rounded-lg bg-purple-50 dark:bg-purple-950/30">
+                <strong class="text-purple-600 dark:text-purple-400 block mb-0.5">Middle of Funnel (MOFU)</strong>
+                <span id="funnelMofuText" class="text-gray-600 dark:text-gray-300">Interactive Claims Revenue Leakage Calculator</span>
+              </div>
+              <div class="p-2.5 rounded-lg bg-emerald-50 dark:bg-emerald-950/30">
+                <strong class="text-emerald-600 dark:text-emerald-400 block mb-0.5">Bottom of Funnel (BOFU)</strong>
+                <span id="funnelBofuText" class="text-gray-600 dark:text-gray-300">30-Day Guaranteed Clean Claim Pilot</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Campaign Card -->
+          <div class="bg-white dark:bg-darkbg-800 p-6 rounded-2xl border border-gray-200 dark:border-darkbg-700 space-y-3">
+            <h4 class="text-sm font-bold text-gray-900 dark:text-white flex items-center space-x-2">
+              <i data-lucide="target" class="w-4 h-4 text-emerald-500"></i>
+              <span>Flagship Launch Campaign Concept</span>
+            </h4>
+            <div class="space-y-2 text-xs">
+              <div>
+                <span class="text-gray-400 block mb-0.5">Campaign Title:</span>
+                <strong id="campaignNameText" class="text-sm text-gray-900 dark:text-white">Zero Denied Claims Challenge</strong>
+              </div>
+              <div>
+                <span class="text-gray-400 block mb-0.5">Core Angle:</span>
+                <p id="campaignMessageText" class="text-gray-600 dark:text-gray-300">Stop donating 12% of collections to paperwork errors.</p>
+              </div>
+              <div class="p-3 rounded-lg bg-gray-50 dark:bg-darkbg-700 font-mono text-gray-700 dark:text-gray-300" id="campaignHookText">
+                "We guarantee 99.2% clean claim submission or we cover the difference."
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 7: 90-DAY ACTION PLAN -->
+      <section id="tab-strategy" class="tab-pane hidden space-y-6">
+        <!-- Market Entry Beachhead -->
+        <div class="bg-white dark:bg-darkbg-800 p-5 rounded-2xl border border-gray-200 dark:border-darkbg-700">
+          <span class="text-xs font-semibold text-gray-400 uppercase tracking-wider block mb-1">Market Entry Wedge Strategy</span>
+          <p class="text-sm text-gray-700 dark:text-gray-300 font-medium" id="marketEntryWedgeText">
+            Penetrate through specialized PhilHealth eClaims verification before upselling broader clinic ERP modules.
+          </p>
+        </div>
+
+        <!-- 7 / 30 / 60 / 90 Day Timeline Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4" id="timelineContainer">
+          <!-- First 7 Days -->
+          <div class="bg-white dark:bg-darkbg-800 p-5 rounded-2xl border border-gray-200 dark:border-darkbg-700 flex flex-col justify-between">
+            <div>
+              <div class="flex items-center justify-between mb-3">
+                <span class="px-2.5 py-1 text-xs font-bold rounded-lg bg-indigo-100 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300">Phase 1</span>
+                <span class="text-xs text-gray-400 font-mono">Days 1 - 7</span>
+              </div>
+              <h4 class="text-sm font-bold text-gray-900 dark:text-white mb-3">Discovery & Validation</h4>
+              <ul class="space-y-2 text-xs text-gray-600 dark:text-gray-300" id="phase7List">
+                <!-- Steps -->
+              </ul>
+            </div>
+          </div>
+
+          <!-- First 30 Days -->
+          <div class="bg-white dark:bg-darkbg-800 p-5 rounded-2xl border border-gray-200 dark:border-darkbg-700 flex flex-col justify-between">
+            <div>
+              <div class="flex items-center justify-between mb-3">
+                <span class="px-2.5 py-1 text-xs font-bold rounded-lg bg-purple-100 text-purple-700 dark:bg-purple-950 dark:text-purple-300">Phase 2</span>
+                <span class="text-xs text-gray-400 font-mono">Days 8 - 30</span>
+              </div>
+              <h4 class="text-sm font-bold text-gray-900 dark:text-white mb-3">MVP Deployment & Beta</h4>
+              <ul class="space-y-2 text-xs text-gray-600 dark:text-gray-300" id="phase30List">
+                <!-- Steps -->
+              </ul>
+            </div>
+          </div>
+
+          <!-- First 60 Days -->
+          <div class="bg-white dark:bg-darkbg-800 p-5 rounded-2xl border border-gray-200 dark:border-darkbg-700 flex flex-col justify-between">
+            <div>
+              <div class="flex items-center justify-between mb-3">
+                <span class="px-2.5 py-1 text-xs font-bold rounded-lg bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300">Phase 3</span>
+                <span class="text-xs text-gray-400 font-mono">Days 31 - 60</span>
+              </div>
+              <h4 class="text-sm font-bold text-gray-900 dark:text-white mb-3">Monetization & Case Studies</h4>
+              <ul class="space-y-2 text-xs text-gray-600 dark:text-gray-300" id="phase60List">
+                <!-- Steps -->
+              </ul>
+            </div>
+          </div>
+
+          <!-- First 90 Days -->
+          <div class="bg-white dark:bg-darkbg-800 p-5 rounded-2xl border border-gray-200 dark:border-darkbg-700 flex flex-col justify-between">
+            <div>
+              <div class="flex items-center justify-between mb-3">
+                <span class="px-2.5 py-1 text-xs font-bold rounded-lg bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-300">Phase 4</span>
+                <span class="text-xs text-gray-400 font-mono">Days 61 - 90</span>
+              </div>
+              <h4 class="text-sm font-bold text-gray-900 dark:text-white mb-3">Scale & Ecosystem</h4>
+              <ul class="space-y-2 text-xs text-gray-600 dark:text-gray-300" id="phase90List">
+                <!-- Steps -->
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <!-- Recommended Pricing Packages -->
+        <div class="bg-white dark:bg-darkbg-800 p-6 rounded-2xl border border-gray-200 dark:border-darkbg-700">
+          <h3 class="text-base font-bold text-gray-900 dark:text-white mb-4 flex items-center space-x-2">
+            <i data-lucide="tag" class="w-4 h-4 text-indigo-500"></i>
+            <span>Recommended Pricing Packaging & Tiering</span>
+          </h3>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4" id="pricingTiersContainer">
+            <!-- Pricing tiers -->
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 8: TOKEN TELEMETRY -->
+      <section id="tab-telemetry" class="tab-pane hidden space-y-6">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div class="bg-white dark:bg-darkbg-800 p-5 rounded-2xl border border-gray-200 dark:border-darkbg-700">
+            <span class="text-xs font-semibold text-gray-400 uppercase tracking-wider block mb-1">Total Tokens Used</span>
+            <div class="text-2xl font-black text-gray-900 dark:text-white" id="telemetryTotalTokens">8,420</div>
+            <span class="text-xs text-gray-500" id="tokenSplitText">Input: 4,200 | Output: 4,220</span>
+          </div>
+          <div class="bg-white dark:bg-darkbg-800 p-5 rounded-2xl border border-gray-200 dark:border-darkbg-700">
+            <span class="text-xs font-semibold text-gray-400 uppercase tracking-wider block mb-1">Tokens Saved By Router</span>
+            <div class="text-2xl font-black text-emerald-500" id="telemetrySavedTokens">11,200</div>
+            <span class="text-xs text-emerald-600 font-medium" id="telemetryEfficiencyPct">57.1% efficiency gain</span>
+          </div>
+          <div class="bg-white dark:bg-darkbg-800 p-5 rounded-2xl border border-gray-200 dark:border-darkbg-700">
+            <span class="text-xs font-semibold text-gray-400 uppercase tracking-wider block mb-1">Estimated Cost</span>
+            <div class="text-2xl font-black text-indigo-500" id="telemetryCostUsd">$0.00316</div>
+            <span class="text-xs text-gray-500">Based on industry API benchmarks</span>
+          </div>
+          <div class="bg-white dark:bg-darkbg-800 p-5 rounded-2xl border border-gray-200 dark:border-darkbg-700">
+            <span class="text-xs font-semibold text-gray-400 uppercase tracking-wider block mb-1">Skills Activated</span>
+            <div class="text-2xl font-black text-amber-500" id="telemetrySkillsCount">9 / 21</div>
+            <span class="text-xs text-gray-500">Unneeded skills pruned</span>
+          </div>
+        </div>
+
+        <!-- Agent-by-Agent Consumption Breakdown -->
+        <div class="bg-white dark:bg-darkbg-800 rounded-2xl border border-gray-200 dark:border-darkbg-700 p-5">
+          <h3 class="text-sm font-bold text-gray-900 dark:text-white mb-3">Agent Token Consumption Breakdown</h3>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs">
+              <thead class="bg-gray-50 dark:bg-darkbg-700 text-gray-500 uppercase font-semibold">
+                <tr>
+                  <th class="px-4 py-2.5">Agent Role</th>
+                  <th class="px-4 py-2.5">Research Task</th>
+                  <th class="px-4 py-2.5">Input Tokens</th>
+                  <th class="px-4 py-2.5">Output Tokens</th>
+                  <th class="px-4 py-2.5">Total Tokens</th>
+                  <th class="px-4 py-2.5">Est. Cost</th>
+                </tr>
+              </thead>
+              <tbody id="agentUsageTableBody" class="divide-y divide-gray-200 dark:divide-darkbg-700">
+                <!-- Usage rows -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <!-- Opportunity Deep-Dive Modal (Displays exact scoring dimensions and evidence) -->
+  <div id="oppModal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-white dark:bg-darkbg-800 rounded-2xl max-w-2xl w-full border border-gray-200 dark:border-darkbg-700 shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+      <div class="p-6 border-b border-gray-200 dark:border-darkbg-700 flex items-center justify-between">
+        <div>
+          <span class="text-xs font-bold text-indigo-500 uppercase tracking-wider">Opportunity Score Card</span>
+          <h3 class="text-lg font-bold text-gray-900 dark:text-white" id="modalOppTitle">Title</h3>
+        </div>
+        <button id="closeOppModalBtn" class="p-2 text-gray-400 hover:text-gray-200 rounded-lg">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+      <div class="p-6 space-y-4 max-h-[75vh] overflow-y-auto custom-scrollbar">
+        <!-- Overall Score Header -->
+        <div class="flex items-center justify-between bg-indigo-50 dark:bg-indigo-950/40 p-4 rounded-xl">
+          <div>
+            <span class="text-xs text-gray-500 dark:text-gray-400 block">Calculated Opportunity Score</span>
+            <span class="text-xs text-emerald-600 dark:text-emerald-400 font-medium" id="modalConfidence">High (Empirical & Industry Backed)</span>
+          </div>
+          <span class="text-3xl font-black text-indigo-600 dark:text-indigo-400" id="modalOppScore">91.4</span>
+        </div>
+
+        <!-- 5 Dimension Breakdown -->
+        <div class="space-y-3" id="modalDimensionsList">
+          <!-- Dimensions -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- History Drawer / Modal -->
+  <div id="historyModal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-white dark:bg-darkbg-800 rounded-2xl max-w-xl w-full border border-gray-200 dark:border-darkbg-700 shadow-2xl p-6">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-base font-bold text-gray-900 dark:text-white flex items-center space-x-2">
+          <i data-lucide="history" class="w-4 h-4 text-indigo-500"></i>
+          <span>Research History</span>
+        </h3>
+        <button id="closeHistoryModalBtn" class="text-gray-400 hover:text-gray-200">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+      <div class="space-y-2 max-h-80 overflow-y-auto custom-scrollbar" id="historyListContainer">
+        <!-- History items -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Compare Modal -->
+  <div id="compareModal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-white dark:bg-darkbg-800 rounded-2xl max-w-xl w-full border border-gray-200 dark:border-darkbg-700 shadow-2xl p-6 space-y-4">
+      <div class="flex items-center justify-between">
+        <h3 class="text-base font-bold text-gray-900 dark:text-white flex items-center space-x-2">
+          <i data-lucide="git-compare" class="w-4 h-4 text-indigo-500"></i>
+          <span>Compare Two Industries</span>
+        </h3>
+        <button id="closeCompareModalBtn" class="text-gray-400 hover:text-gray-200">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+      <form id="compareForm" class="space-y-3">
+        <div>
+          <label class="block text-xs font-semibold text-gray-400 mb-1">First Industry</label>
+          <input type="text" id="compInd1" class="w-full px-3 py-2 rounded-lg bg-gray-50 dark:bg-darkbg-900 border border-gray-300 dark:border-darkbg-600 text-sm" value="Healthcare" required />
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-gray-400 mb-1">Second Industry</label>
+          <input type="text" id="compInd2" class="w-full px-3 py-2 rounded-lg bg-gray-50 dark:bg-darkbg-900 border border-gray-300 dark:border-darkbg-600 text-sm" value="Real Estate" required />
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-gray-400 mb-1">Geographic Market (Optional)</label>
+          <input type="text" id="compLoc" class="w-full px-3 py-2 rounded-lg bg-gray-50 dark:bg-darkbg-900 border border-gray-300 dark:border-darkbg-600 text-sm" placeholder="Philippines or United States" />
+        </div>
+        <button type="submit" class="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-lg text-sm shadow transition">
+          Run Side-by-Side Comparison
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>
